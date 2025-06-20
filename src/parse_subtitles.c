@@ -1,15 +1,23 @@
+#include <math.h>
+#include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
 #include "subtitle.h"
 
-#ifdef _WIN32
-#define CLEAR_SCREEN "cls"
-#else
-#define CLEAR_SCREEN "clear"
-#endif
+void playback_frame(Subtitle *subtitle) {
+    auto start_secs = (unsigned)floor((subtitle->start_ms / 1000));
+    auto end_secs = (unsigned)ceil((subtitle->end_ms / 10000));
+    sleep(3);
+    //sleep((end_secs - start_secs));
+    system(CLEAR_SCREEN);
+}
 
-int get_subtitles_count(char *srt_file) {
-    FILE *f = fopen(srt_file, "r");
+int get_subtitles_count(char *in_srt_file) {
+    FILE *f = fopen(in_srt_file, "r");
     if (!f) {
-        perror("Failed to open subtitles (SRT) file.\n");
+        perror("Failed to open subtitles (SRT) file.");
         return -1;
     }
     int count, last = 0;
@@ -26,7 +34,9 @@ int get_subtitles_count(char *srt_file) {
     return count;
 }
 
-int process_subtitles_srt_file(char *in_srt_file, char *out_srt_file, long offset) {
+int process_subtitles_srt_file(char *in_srt_file, char *out_srt_file, long offset_ms) {
+    printf("Will output to '%s'.\n", out_srt_file);
+
     // Determine number of subtitles (count).
     int count = get_subtitles_count(in_srt_file);
     if (count == -1)
@@ -39,7 +49,7 @@ int process_subtitles_srt_file(char *in_srt_file, char *out_srt_file, long offse
     // Allocate memory on heap for all subtitles.
     Subtitle *subtitles = malloc((sizeof(Subtitle) * count));
 
-    FILE *f = fopen(srt_file, "r");
+    FILE *f = fopen(in_srt_file, "r");
     if (!f) {
         perror("Failed to open subtitles (SRT) file.\n");
         return -1;
@@ -47,7 +57,10 @@ int process_subtitles_srt_file(char *in_srt_file, char *out_srt_file, long offse
 
     char line[MAX_LINE_LENGTH];
     char final_text[MAX_LINE_LENGTH];
-    char text[(MAX_LINE_LENGTH / 2)];
+    char text[((MAX_LINE_LENGTH / 2) + 1)];
+
+    // Ensure final text buffer starts clear.
+    memset(final_text, 0, sizeof(final_text));
 
     int i = 0;
     SubtitleTag tag = END;
@@ -55,7 +68,7 @@ int process_subtitles_srt_file(char *in_srt_file, char *out_srt_file, long offse
         // Set tag type based on content:
         // SEQUENCE, TIMESTAMPS or TEXT.
         for (int j = 0; line[j] != '\n'; j++) {
-            if (!isdigit((char)line[j])) {
+            if (!isdigit(line[j])) {
                 tag = TEXT;
                 break;
             }
@@ -79,8 +92,9 @@ int process_subtitles_srt_file(char *in_srt_file, char *out_srt_file, long offse
 
         // Add text.
         else if (tag == TEXT) {
+            // Clear current text buffer first.
             memset(text, 0, sizeof(text));
-            sscanf(line, "%500[^\n]", text);
+            sscanf(line, "%250[^\n]", text);
             strcat(final_text, text);
             strcat(final_text, "\n");
         }
@@ -88,6 +102,7 @@ int process_subtitles_srt_file(char *in_srt_file, char *out_srt_file, long offse
         // Next subtitle.
         else if (tag == END) {
             strcpy(subtitles[i].text, final_text);
+            // Clear final text buffer for next subtitle's text.
             memset(final_text, 0, sizeof(final_text));
             i++;
         }
@@ -96,18 +111,16 @@ int process_subtitles_srt_file(char *in_srt_file, char *out_srt_file, long offse
     }
 
     for (int x = 0; x < count; x++) {
-        if (parse_timestamps(&subtitles[x]) == -1) {
+        if (parse_timestamps(&subtitles[x], offset_ms) == -1) {
             fprintf(stderr, "Error: Failed to convert subtitle into milliseconds.");
             return -1;
         }
     }
 
     for (int y = 0; y < count; y++) {
-        //sleep((unsigned int)subtitles[y].start_ms);
-        sleep(3);
-        system(CLEAR_SCREEN);
+        playback_frame(&subtitles[y]);
         printf("%s\n", subtitles[y].timestamps);
-        printf("%d --> %d (ms)\n", subtitles[y].start_ms, subtitles[y].end_ms);
+        printf("%ld --> %ld (ms)\n", subtitles[y].start_ms, subtitles[y].end_ms);
         printf("%s\n", subtitles[y].text);
     }
 

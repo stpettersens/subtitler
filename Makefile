@@ -1,24 +1,32 @@
-CC=gcc
-TARGET=bin/subtitler
-INCLUDE=include
-SRC=src/subtitler.c
+CC = gcc # clang also works.
+TARGET = bin/subtitler
+INCLUDE = include
+FLAGS=-Wall -Wextra -std=c11
+SRC = $(wildcard src/*.c)
+OBJ = $(patsubst src/%.c, obj/%.o, $(SRC))
 
-rm=rm
+RM = rm -f obj/*.o bin/*
+
 uname := $(shell uname)
 
 # https://github.com/stpettersens/uname-windows
 ifeq ($(uname),Windows)
 	TARGET=bin\subtitler.exe
-	rm=del
+	RM=del obj\*.o bin\*.exe
 endif
 
-all: run
+run: all
+	$(TARGET)
 
-run: make
-	./$(TARGET)
+all: clean default
 
-make:
-	$(CC) $(SRC) -I$(INCLUDE) -o$(TARGET)
+default: $(TARGET)
 
 clean:
-	$(rm) $(TARGET)
+	$(RM)
+
+$(TARGET): $(OBJ)
+	$(CC) -o $@ $? -lm
+
+obj/%.o: src/%.c
+	$(CC)$(FLAGS) -c $< -o $@ -I$(INCLUDE)

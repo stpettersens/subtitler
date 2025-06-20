@@ -1,6 +1,12 @@
 #ifndef SUBTITLE_H
 #define SUBTITLE_H
 
+#ifdef _WIN32
+#define CLEAR_SCREEN "cls"
+#else
+#define CLEAR_SCREEN "clear"
+#endif
+
 #define MAX_LINE_LENGTH 501
 
 typedef struct {
@@ -18,6 +24,11 @@ typedef enum {
     END = 3
 } SubtitleTag;
 
-int process_subtitles_srt_file(char *in_srt_file, char *out_srt_file, long offset)
+void playback_frame(Subtitle *subtitle);
+int get_subtitles_count(char *in_srt_file);
+int process_subtitles_srt_file(char *in_srt_file, char *out_srt_file, long offset_ms);
+long parse_timestamp_ms(char *timestamp);
+void parse_ms_timestamp(char *timestamp, long total_ms);
+int parse_timestamps(Subtitle *subtitle, long offset_ms);
 
 #endif
