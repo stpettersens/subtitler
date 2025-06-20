@@ -2,17 +2,10 @@
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <unistd.h>
 #include <string.h>
 #include "subtitle.h"
-
-void playback_frame(Subtitle *subtitle) {
-    auto start_secs = (unsigned)floor((subtitle->start_ms / 1000));
-    auto end_secs = (unsigned)ceil((subtitle->end_ms / 10000));
-    sleep(3);
-    //sleep((end_secs - start_secs));
-    system(CLEAR_SCREEN);
-}
 
 int get_subtitles_count(char *in_srt_file) {
     FILE *f = fopen(in_srt_file, "r");
@@ -34,7 +27,7 @@ int get_subtitles_count(char *in_srt_file) {
     return count;
 }
 
-int process_subtitles_srt_file(char *in_srt_file, char *out_srt_file, long offset_ms) {
+int process_subtitles_srt_file(char *in_srt_file, char *out_srt_file, long offset_ms, SubtitleOp op) {
     printf("Will output to '%s'.\n", out_srt_file);
 
     // Determine number of subtitles (count).
@@ -44,7 +37,7 @@ int process_subtitles_srt_file(char *in_srt_file, char *out_srt_file, long offse
 
     system(CLEAR_SCREEN); // !TODO
     printf("Number of subtitles (count) = %d\n\n", count);
-    sleep(1); // !TODO
+    sleep(5);
 
     // Allocate memory on heap for all subtitles.
     Subtitle *subtitles = malloc((sizeof(Subtitle) * count));
@@ -117,11 +110,23 @@ int process_subtitles_srt_file(char *in_srt_file, char *out_srt_file, long offse
         }
     }
 
-    for (int y = 0; y < count; y++) {
-        playback_frame(&subtitles[y]);
-        printf("%s\n", subtitles[y].timestamps);
-        printf("%ld --> %ld (ms)\n", subtitles[y].start_ms, subtitles[y].end_ms);
-        printf("%s\n", subtitles[y].text);
+    if (op == PLAYBACK) {
+        long s = 0;
+        int y = 0;
+        system(CLEAR_SCREEN);
+        while (y < count) {
+            if (s == (subtitles[y].start_ms / 1000)) {
+                printf("%s\n", subtitles[y].timestamps);
+                printf("%ld --> %ld (ms)\n", subtitles[y].start_ms, subtitles[y].end_ms);
+                printf("%s\n", subtitles[y].text);
+            }
+            else if (s == (subtitles[y].end_ms / 1000)) {
+                system(CLEAR_SCREEN);
+                y++;
+            }
+            sleep(1);
+            s++;
+        }
     }
 
     free(subtitles);

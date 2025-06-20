@@ -4,6 +4,7 @@
 
 //int main(int argc, char *argv[]) {
 int main() {
-    int status = process_subtitles_srt_file("Parasite.2019.srt", "copy.srt", (long)0);
+    SubtitleOp op = PLAYBACK;
+    int status = process_subtitles_srt_file("Parasite.2019.srt", "copy.srt", (long)0, op);
     return status;
 }

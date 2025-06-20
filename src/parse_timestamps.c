@@ -22,7 +22,7 @@ long parse_timestamp_ms(char *timestamp) {
     long ms_mins = (mins * 60000);
     long ms_secs = (secs * 1000);
 
-    long total_ms = (ms + ms_hours + ms_mins + ms_secs);
+    long total_ms = (long)floor(ms + ms_hours + ms_mins + ms_secs);
     return total_ms;
 }
 
