@@ -1,2 +1,2 @@
-# subtitler
-CLI utility to timeshift subtitle (SRT) files.
+### subtitler
+> CLI utility to timeshift subtitle (SRT) files.
