@@ -7,6 +7,10 @@
 #include <string.h>
 #include "subtitle.h"
 
+void playback_subtitles(int count, Subtitle *subtitles) {
+    // !TODO
+}
+
 int get_subtitles_count(char *in_srt_file) {
     FILE *f = fopen(in_srt_file, "r");
     if (!f) {
@@ -27,8 +31,8 @@ int get_subtitles_count(char *in_srt_file) {
     return count;
 }
 
-int process_subtitles_srt_file(char *in_srt_file, char *out_srt_file, long offset_ms, SubtitleOp op) {
-    printf("Will output to '%s'.\n", out_srt_file);
+int process_subtitles(char *in_srt_file, char *out_srt_file, long offset_ms, SubtitleOp op) {
+    printf("Will output to '%s'.\n", out_srt_file); // !!!
 
     // Determine number of subtitles (count).
     int count = get_subtitles_count(in_srt_file);
@@ -38,6 +42,7 @@ int process_subtitles_srt_file(char *in_srt_file, char *out_srt_file, long offse
     system(CLEAR_SCREEN); // !TODO
     printf("Number of subtitles (count) = %d\n\n", count);
     sleep(5);
+    system(CLEAR_SCREEN); // !TODO
 
     // Allocate memory on heap for all subtitles.
     Subtitle *subtitles = malloc((sizeof(Subtitle) * count));
@@ -110,23 +115,16 @@ int process_subtitles_srt_file(char *in_srt_file, char *out_srt_file, long offse
         }
     }
 
-    if (op == PLAYBACK) {
-        long s = 0;
-        int y = 0;
+    for (int z = 0; z < count; z++) {
+        printf("%s\n", subtitles[z].timestamps);
+        printf("%ld --> %ld (ms)\n", subtitles[z].start_ms, subtitles[z].end_ms);
+        printf("%s\n", subtitles[z].text);
+        sleep(3);
         system(CLEAR_SCREEN);
-        while (y < count) {
-            if (s == (subtitles[y].start_ms / 1000)) {
-                printf("%s\n", subtitles[y].timestamps);
-                printf("%ld --> %ld (ms)\n", subtitles[y].start_ms, subtitles[y].end_ms);
-                printf("%s\n", subtitles[y].text);
-            }
-            else if (s == (subtitles[y].end_ms / 1000)) {
-                system(CLEAR_SCREEN);
-                y++;
-            }
-            sleep(1);
-            s++;
-        }
+    }
+
+    if (op == PLAYBACK) {
+        // TODO
     }
 
     free(subtitles);

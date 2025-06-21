@@ -25,11 +25,13 @@ typedef enum {
 } SubtitleTag;
 
 typedef enum {
-    PLAYBACK = 0
+    PLAYBACK = 0,
+    TIME_SHIFT = 1
 } SubtitleOp;
 
+void playback_subtitles(int count, Subtitle *subtitles);
 int get_subtitles_count(char *in_srt_file);
-int process_subtitles_srt_file(char *in_srt_file, char *out_srt_file, long offset_ms, SubtitleOp op);
+int process_subtitles(char *in_srt_file, char *out_srt_file, long offset_ms, SubtitleOp op);
 long parse_timestamp_ms(char *timestamp);
 void parse_ms_timestamp(char *timestamp, long total_ms);
 int parse_timestamps(Subtitle *subtitle, long offset_ms);

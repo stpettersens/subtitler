@@ -43,6 +43,7 @@ int parse_timestamps(Subtitle *subtitle, long offset_ms) {
     {
         subtitle->start_ms = parse_timestamp_ms(start);
         subtitle->end_ms = parse_timestamp_ms(end);
+
         if (offset_ms != 0) {
             subtitle->start_ms += offset_ms;
             subtitle->end_ms += offset_ms;
