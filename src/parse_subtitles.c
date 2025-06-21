@@ -1,4 +1,5 @@
 #include <math.h>
+#include <time.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,8 +8,36 @@
 #include <string.h>
 #include "subtitle.h"
 
-void playback_subtitles(int count, Subtitle *subtitles) {
-    // !TODO
+void cls() {
+    system(CLEAR_SCREEN);
+}
+
+void playback_subtitles(char *in_srt_file, int count, Subtitle *subtitles) {
+    char start[16], end[16];
+    sscanf(subtitles[(count - 1)].timestamps, "%15s --> %15s", start, end);
+
+    cls();
+
+    printf("Playing back '%s' (Runtime: %s [%ld ms])\n",
+    in_srt_file, end, subtitles[(count - 1)].end_ms);
+
+    sleep(3);
+    cls();
+
+    long f = 0;
+    long timer = 999;
+    while (f < count) {
+        if (timer == subtitles[f].start_ms) {
+            printf("%s\n", subtitles[f].timestamps);
+            printf("%s\n", subtitles[f].text);
+        }
+        else if (timer == subtitles[f].end_ms) {
+            f++;
+            cls();
+        }
+        usleep(1000);
+        timer += 1;
+    }
 }
 
 int get_subtitles_count(char *in_srt_file) {
@@ -32,17 +61,10 @@ int get_subtitles_count(char *in_srt_file) {
 }
 
 int process_subtitles(char *in_srt_file, char *out_srt_file, long offset_ms, SubtitleOp op) {
-    printf("Will output to '%s'.\n", out_srt_file); // !!!
-
     // Determine number of subtitles (count).
     int count = get_subtitles_count(in_srt_file);
     if (count == -1)
         return -1;
-
-    system(CLEAR_SCREEN); // !TODO
-    printf("Number of subtitles (count) = %d\n\n", count);
-    sleep(5);
-    system(CLEAR_SCREEN); // !TODO
 
     // Allocate memory on heap for all subtitles.
     Subtitle *subtitles = malloc((sizeof(Subtitle) * count));
@@ -115,16 +137,13 @@ int process_subtitles(char *in_srt_file, char *out_srt_file, long offset_ms, Sub
         }
     }
 
-    for (int z = 0; z < count; z++) {
-        printf("%s\n", subtitles[z].timestamps);
-        printf("%ld --> %ld (ms)\n", subtitles[z].start_ms, subtitles[z].end_ms);
-        printf("%s\n", subtitles[z].text);
-        sleep(3);
-        system(CLEAR_SCREEN);
-    }
+    switch (op) {
+        case NO_EXTRA_OP:
+            break;
 
-    if (op == PLAYBACK) {
-        // TODO
+        case PLAYBACK:
+            playback_subtitles(in_srt_file, count, subtitles);
+            break;
     }
 
     free(subtitles);
