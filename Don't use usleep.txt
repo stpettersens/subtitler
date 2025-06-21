@@ -1,0 +1,10 @@
+Is usleep Reliable for Timings
+The reliability of usleep() for timings is limited and depends on several factors. According to the man page for usleep(3), the sleep may be lengthened slightly by any system activity or by the time spent processing the call or by the granularity of system timers.
+ Additionally, the usleep() function is not deterministic, as the thread that executes a sleep may experience significant delay until it is rescheduled after the expiration of the sleep time.
+
+On Linux systems, for delays of under about 50 milliseconds, usleep() usually delays somewhat more than the amount specified, and at least about 10 ms.
+ Furthermore, usleep() is considered obsolete, and it is recommended to use nanosleep() instead in new code.
+
+In terms of accuracy, usleep() is not suitable for precise timing requirements, as it may not provide the exact delay requested. For more accurate timing, especially for short durations, other methods such as using the nanosleep() function or hardware-specific techniques like I/O port programming may be more appropriate.
+
+In summary, usleep() is not reliable for precise or deterministic timing due to system scheduling and timer granularity issues. It is advisable to use more modern and reliable alternatives like nanosleep() for better control over sleep durations.4
