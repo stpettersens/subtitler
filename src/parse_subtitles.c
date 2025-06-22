@@ -1,4 +1,9 @@
-#include <math.h>
+#ifdef _WIN32
+#include <windows.h>
+#else
+#define _GNU_SOURCE // For CLOCK_MONOTONIC and TIMER_ABSTIME.
+#endif
+
 #include <time.h>
 #include <ctype.h>
 #include <stdio.h>
@@ -12,6 +17,18 @@ void cls() {
     system(CLEAR_SCREEN);
 }
 
+#ifdef _WIN32
+// The function below is unsed on Windows.
+#else
+void add_ms_to_timespec(struct timespec *ts, long ms) {
+    ts->tv_nsec += ms * 1000000L;
+    if (ts->tv_nsec >= 1000000000L) {
+        ts->tv_nsec -= 1000000000L;
+        ts->tv_sec += 1;
+    }
+}
+#endif
+
 void playback_subtitles(char *in_srt_file, int count, Subtitle *subtitles) {
     char start[16], end[16];
     sscanf(subtitles[(count - 1)].timestamps, "%15s --> %15s", start, end);
@@ -24,9 +41,22 @@ void playback_subtitles(char *in_srt_file, int count, Subtitle *subtitles) {
     sleep(3);
     cls();
 
-    long f = 0;
-    long timer = 999;
+#ifdef _WIN32
+    LARGE_INTEGER freq, start, current;
+    QueryPeformanceFrequency(&freq);  // Get ticks per second.
+    QueryPeformanceFrequency(&start); // Start time.
+#else
+    struct timespec next;
+    clock_gettime(CLOCK_MONOTONIC, &next); // Get current monotonic time.
+#endif
+
+    long f = 0, timer = 0;
     while (f < count) {
+
+#ifdef _WIN32
+        QueryPeformanceCounter(&current);
+        LONGLONG elapsed_ms = ((current.QuadPart - start.QuadPart) * 1000) / freq.QuadPart);
+#endif
         if (timer == subtitles[f].start_ms) {
             printf("%s\n", subtitles[f].timestamps);
             printf("%s\n", subtitles[f].text);
@@ -35,8 +65,14 @@ void playback_subtitles(char *in_srt_file, int count, Subtitle *subtitles) {
             f++;
             cls();
         }
-        usleep(1000);
-        timer += 1;
+
+#ifdef _WIN32
+        Sleep(1); // Sleep 1 ms.
+#else
+        add_ms_to_timespec(&next, INTERVAL_MS);
+        clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &next, NULL);
+#endif
+        timer++;
     }
 }
 

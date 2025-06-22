@@ -8,6 +8,7 @@
 #endif
 
 #define MAX_LINE_LENGTH 501
+#define INTERVAL_MS 1           // 1 millisecond = 1000000 nanoseconds.
 
 typedef struct {
     int sequence;

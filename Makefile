@@ -1,4 +1,4 @@
-CC = clang # clang also works.
+CC = gcc # clang also works.
 TARGET = bin/subtitler
 INCLUDE = include
 FLAGS=-Wall -Wextra -std=c11
