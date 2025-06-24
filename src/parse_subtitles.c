@@ -50,19 +50,20 @@ void playback_subtitles(char *in_srt_file, int count, Subtitle *subtitles) {
     clock_gettime(CLOCK_MONOTONIC, &next); // Get current monotonic time.
 #endif
 
-    long f = 0, timer = 0;
-    while (f < count) {
+    int i = 0;
+    long timer = 0;
+    while (i < count) {
 
 #ifdef _WIN32
         QueryPerformanceCounter(&current);
         LONGLONG elapsed_ms = (((current.QuadPart - tstart.QuadPart) * 1000) / freq.QuadPart);
 #endif
-        if (timer == subtitles[f].start_ms) {
-            printf("%s\n", subtitles[f].timestamps);
-            printf("%s\n", subtitles[f].text);
+        if (timer == subtitles[i].start_ms) {
+            printf("%s\n", subtitles[i].timestamps);
+            printf("%s\n", subtitles[i].text);
         }
-        else if (timer == subtitles[f].end_ms) {
-            f++;
+        else if (timer == subtitles[i].end_ms) {
+            i++;
             cls();
         }
 
