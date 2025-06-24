@@ -81,7 +81,7 @@ void playback_subtitles(char *in_srt_file, int count, Subtitle *subtitles) {
 int get_subtitles_count(char *in_srt_file) {
     FILE *f = fopen(in_srt_file, "r");
     if (!f) {
-        perror("Failed to open subtitles (SRT) file.");
+        perror("Failed to open subtitles (SRT) file.\n");
         return -1;
     }
     int count, last = 0;
@@ -108,6 +108,7 @@ int process_subtitles
     // Allocate memory on heap for all subtitles.
     Subtitle *subtitles = malloc((sizeof(Subtitle) * count));
 
+    // Parse subtitles.
     FILE *f = fopen(in_srt_file, "r");
     if (!f) {
         perror("Failed to open subtitles (SRT) file.\n");
@@ -170,28 +171,39 @@ int process_subtitles
         tag = END;
     }
 
-    if (frames == NULL) {
+    // Timeshift subtitles as specified by given offset_ms (0 does not change).
+    if (frame_count == 0) {
+        // Timeshift every subtitle.
         for (int x = 0; x < count; x++) {
             if (parse_timestamps(&subtitles[x], offset_ms) == -1) {
                 fprintf(stderr, "Error: Failed to convert subtitle into milliseconds.");
+                free(subtitles);
+                fclose(f);
                 return -1;
             }
         }
     }
     else {
-        for (int f = 0; f < frame_count; f++) {
-            if (f > count) {
-                fprintf(stderr, "Error: Provided frame %d is greater than number of subtitles.", f);
+        // Timeshift only subtitles for those given in frames array while fr < frame_count.
+        for (int fr = 0; fr < frame_count; fr++) {
+            if (frames[fr] > count) {
+                fprintf(stderr, "Error: Provided frame %d is greater than number of subtitles.",
+                frames[fr]);
+                free(subtitles);
+                fclose(f);
                 return -1;
             }
 
-            if (parse_timestamps(&subtitles[f], offset_ms) == -1) {
+            if (parse_timestamps(&subtitles[(frames[fr])], offset_ms) == -1) {
                 fprintf(stderr, "Error: Failed to convert subtitle into milliseconds.");
+                free(subtitles);
+                fclose(f);
                 return -1;
             }
         }
     }
 
+    // Any addtional option to run after timeshift, such as playback.
     switch (op) {
         case NO_EXTRA_OP:
             break;
