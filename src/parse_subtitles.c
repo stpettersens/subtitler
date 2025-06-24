@@ -98,7 +98,8 @@ int get_subtitles_count(char *in_srt_file) {
     return count;
 }
 
-int process_subtitles(char *in_srt_file, char *out_srt_file, long offset_ms, SubtitleOp op) {
+int process_subtitles
+(char *in_srt_file, char *out_srt_file, int frame_count, int *frames, long offset_ms, Op op) {
     // Determine number of subtitles (count).
     int count = get_subtitles_count(in_srt_file);
     if (count == -1)
@@ -169,10 +170,25 @@ int process_subtitles(char *in_srt_file, char *out_srt_file, long offset_ms, Sub
         tag = END;
     }
 
-    for (int x = 0; x < count; x++) {
-        if (parse_timestamps(&subtitles[x], offset_ms) == -1) {
-            fprintf(stderr, "Error: Failed to convert subtitle into milliseconds.");
-            return -1;
+    if (frames == NULL) {
+        for (int x = 0; x < count; x++) {
+            if (parse_timestamps(&subtitles[x], offset_ms) == -1) {
+                fprintf(stderr, "Error: Failed to convert subtitle into milliseconds.");
+                return -1;
+            }
+        }
+    }
+    else {
+        for (int f = 0; f < frame_count; f++) {
+            if (f > count) {
+                fprintf(stderr, "Error: Provided frame %d is greater than number of subtitles.", f);
+                return -1;
+            }
+
+            if (parse_timestamps(&subtitles[f], offset_ms) == -1) {
+                fprintf(stderr, "Error: Failed to convert subtitle into milliseconds.");
+                return -1;
+            }
         }
     }
 
