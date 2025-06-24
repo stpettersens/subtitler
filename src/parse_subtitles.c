@@ -42,9 +42,9 @@ void playback_subtitles(char *in_srt_file, int count, Subtitle *subtitles) {
     cls();
 
 #ifdef _WIN32
-    LARGE_INTEGER freq, start, current;
-    QueryPeformanceFrequency(&freq);  // Get ticks per second.
-    QueryPeformanceFrequency(&start); // Start time.
+    LARGE_INTEGER freq, tstart, current;
+    QueryPerformanceFrequency(&freq);  // Get ticks per second.
+    QueryPerformanceFrequency(&tstart); // Start time.
 #else
     struct timespec next;
     clock_gettime(CLOCK_MONOTONIC, &next); // Get current monotonic time.
@@ -54,8 +54,8 @@ void playback_subtitles(char *in_srt_file, int count, Subtitle *subtitles) {
     while (f < count) {
 
 #ifdef _WIN32
-        QueryPeformanceCounter(&current);
-        LONGLONG elapsed_ms = ((current.QuadPart - start.QuadPart) * 1000) / freq.QuadPart);
+        QueryPerformanceCounter(&current);
+        LONGLONG elapsed_ms = (((current.QuadPart - tstart.QuadPart) * 1000) / freq.QuadPart);
 #endif
         if (timer == subtitles[f].start_ms) {
             printf("%s\n", subtitles[f].timestamps);
@@ -68,11 +68,12 @@ void playback_subtitles(char *in_srt_file, int count, Subtitle *subtitles) {
 
 #ifdef _WIN32
         Sleep(1); // Sleep 1 ms.
+        if (elapsed_ms >= timer) timer++;
 #else
         add_ms_to_timespec(&next, INTERVAL_MS);
         clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &next, NULL);
-#endif
         timer++;
+#endif
     }
 }
 
