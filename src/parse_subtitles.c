@@ -35,8 +35,8 @@ void playback_subtitles(char *in_srt_file, int count, Subtitle *subtitles) {
 
     cls();
 
-    printf("Playing back '%s' (Runtime: %s [%ld ms])\n",
-    in_srt_file, end, subtitles[(count - 1)].end_ms);
+    printf("Playing back '%s' (Runtime: %s [%ld ms]; Count = %d)\n",
+    in_srt_file, end, subtitles[(count - 1)].end_ms, count);
 
     sleep(3);
     cls();
@@ -125,7 +125,8 @@ int process_subtitles(char *in_srt_file, char *out_srt_file, long offset_ms, Sub
         // Set tag type based on content:
         // SEQUENCE, TIMESTAMPS or TEXT.
         for (int j = 0; line[j] != '\n'; j++) {
-            if (!isdigit(line[j])) {
+            int ch = line[j];
+            if (!isdigit(ch)) {
                 tag = TEXT;
                 break;
             }
