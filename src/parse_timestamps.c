@@ -6,16 +6,16 @@
 int parse_timestamp_ms(char *timestamp) {
     char *_ms = strtok(timestamp, ",");
     _ms = strtok(NULL, ",");
-    int ms = atol(_ms);
+    int ms = atoi(_ms);
 
     char *hms = strtok(timestamp, ":");
-    int hours = atol(hms);
+    int hours = atoi(hms);
 
     hms = strtok(NULL, ":");
-    int mins = atol(hms);
+    int mins = atoi(hms);
 
     hms = strtok(NULL, ":");
-    int secs = atol(hms);
+    int secs = atoi(hms);
 
     int ms_hours = (hours * 3600000);
     int ms_mins = (mins * 60000);
