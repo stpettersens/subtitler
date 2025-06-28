@@ -1,4 +1,3 @@
-#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,7 +6,7 @@
 long parse_timestamp_ms(char *timestamp) {
     char *_ms = strtok(timestamp, ",");
     _ms = strtok(NULL, ",");
-    long int ms = atol(_ms);
+    long ms = atol(_ms);
 
     char *hms = strtok(timestamp, ":");
     long hours = atol(hms);
@@ -22,16 +21,16 @@ long parse_timestamp_ms(char *timestamp) {
     long ms_mins = (mins * 60000);
     long ms_secs = (secs * 1000);
 
-    long total_ms = (long)floor(ms + ms_hours + ms_mins + ms_secs);
+    long total_ms = (ms + ms_hours + ms_mins + ms_secs);
     return total_ms;
 }
 
 void parse_ms_timestamp(char *timestamp, long total_ms) {
-    long hours = (long)floor(total_ms / (1000 * 60 * 60));
+    long hours = (total_ms / (1000 * 60 * 60));
     long ms = (total_ms - (hours * 1000 * 60 * 60));
-    long mins = (long)floor(ms / (1000 * 60));
+    long mins = (ms / (1000 * 60));
     ms = (ms - (mins * 1000 * 60));
-    long secs = (long)floor(ms / 1000);
+    long secs = (ms / 1000);
     ms = (ms - (secs * 1000));
     sprintf(timestamp, "%2ld:%2ld:%ld2,%3ld", hours, mins, secs, ms);
 }
