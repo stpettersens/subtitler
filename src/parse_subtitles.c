@@ -35,7 +35,7 @@ void playback_subtitles(char *in_srt_file, int count, Subtitle *subtitles) {
 
     cls();
 
-    printf("Playing back '%s' (Runtime: %s [%ld ms]; Count = %d)\n",
+    printf("Playing back '%s' (Runtime: %s [%d ms]; Count = %d)\n",
     in_srt_file, end, subtitles[(count - 1)].end_ms, count);
 
     sleep(3);
@@ -51,7 +51,7 @@ void playback_subtitles(char *in_srt_file, int count, Subtitle *subtitles) {
 #endif
 
     int i = 0;
-    long timer = 0;
+    int timer = 0;
     while (i < count) {
 
 #ifdef _WIN32
@@ -81,7 +81,7 @@ void playback_subtitles(char *in_srt_file, int count, Subtitle *subtitles) {
 int get_subtitles_count(char *in_srt_file) {
     FILE *f = fopen(in_srt_file, "r");
     if (!f) {
-        perror("Failed to open subtitles (SRT) file.\n");
+        perror("Failed to open subtitles (SRT) file for counting.\n");
         return -1;
     }
     int count, last = 0;
@@ -99,7 +99,7 @@ int get_subtitles_count(char *in_srt_file) {
 }
 
 int process_subtitles
-(char *in_srt_file, char *out_srt_file, int frame_count, int *frames, long offset_ms, Op op) {
+(char *in_srt_file, char *out_srt_file, int frame_count, int *frames, int offset_ms, Op op) {
     // Determine number of subtitles (count).
     int count = get_subtitles_count(in_srt_file);
     if (count == -1)
@@ -111,7 +111,7 @@ int process_subtitles
     // Parse subtitles.
     FILE *f = fopen(in_srt_file, "r");
     if (!f) {
-        perror("Failed to open subtitles (SRT) file.\n");
+        perror("Failed to open subtitles (SRT) file for reading.\n");
         return -1;
     }
 
@@ -176,9 +176,9 @@ int process_subtitles
         // Timeshift every subtitle.
         for (int x = 0; x < count; x++) {
             if (parse_timestamps(&subtitles[x], offset_ms) == -1) {
-                fprintf(stderr, "Error: Failed to convert subtitle into milliseconds.");
-                free(subtitles);
+                fprintf(stderr, "Error: Failed to convert subtitle time into milliseconds.");
                 fclose(f);
+                free(subtitles);
                 return -1;
             }
         }
@@ -189,18 +189,38 @@ int process_subtitles
             if (frames[fr] > count) {
                 fprintf(stderr, "Error: Provided frame %d is greater than number of subtitles.",
                 frames[fr]);
-                free(subtitles);
                 fclose(f);
+                free(subtitles);
                 return -1;
             }
 
             if (parse_timestamps(&subtitles[(frames[fr])], offset_ms) == -1) {
-                fprintf(stderr, "Error: Failed to convert subtitle into milliseconds.");
-                free(subtitles);
+                fprintf(stderr, "Error: Failed to convert subtitle time into milliseconds.");
                 fclose(f);
+                free(subtitles);
                 return -1;
             }
         }
+    }
+
+    fclose(f);
+
+    if (offset_ms != 0)
+    {
+        // Write out time changes to out file.
+        f = fopen(out_srt_file, "w");
+        if (!f) {
+            perror("Failed to open subtitles (SRT) file for writing.\n");
+            return -1;
+        }
+
+        for (int y = 0; y < count; y++) {
+            fprintf(f, "%d\n", subtitles[y].sequence);
+            fprintf(f, "%s\n", subtitles[y].timestamps);
+            fprintf(f, "%s\n", subtitles[y].text);
+        }
+
+        fclose(f);
     }
 
     // Any addtional option to run after timeshift, such as playback.
@@ -214,7 +234,6 @@ int process_subtitles
     }
 
     free(subtitles);
-    fclose(f);
 
     return 0;
 }

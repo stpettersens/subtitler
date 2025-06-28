@@ -14,8 +14,8 @@ typedef struct {
     int sequence;
     char timestamps[30];
     char text[MAX_LINE_LENGTH];
-    long start_ms;
-    long end_ms;
+    int start_ms;
+    int end_ms;
 } Subtitle;
 
 typedef enum {
@@ -35,10 +35,10 @@ void playback_subtitles(char *in_srt_file, int count, Subtitle *subtitles);
 int get_subtitles_count(char *in_srt_file);
 
 int process_subtitles
-(char *in_srt_file, char *out_srt_file, int frame_count, int *frames, long offset_ms, Op op);
+(char *in_srt_file, char *out_srt_file, int frame_count, int *frames, int offset_ms, Op op);
 
-long parse_timestamp_ms(char *timestamp);
-void parse_ms_timestamp(char *timestamp, long total_ms);
-int parse_timestamps(Subtitle *subtitle, long offset_ms);
+int parse_timestamp_ms(char *timestamp);
+void parse_ms_timestamp(char *timestamp, int total_ms);
+int parse_timestamps(Subtitle *subtitle, int offset_ms);
 
 #endif

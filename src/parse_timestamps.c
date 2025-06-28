@@ -3,42 +3,43 @@
 #include <string.h>
 #include "subtitle.h"
 
-long parse_timestamp_ms(char *timestamp) {
+int parse_timestamp_ms(char *timestamp) {
     char *_ms = strtok(timestamp, ",");
     _ms = strtok(NULL, ",");
-    long ms = atol(_ms);
+    int ms = atol(_ms);
 
     char *hms = strtok(timestamp, ":");
-    long hours = atol(hms);
+    int hours = atol(hms);
 
     hms = strtok(NULL, ":");
-    long mins = atol(hms);
+    int mins = atol(hms);
 
     hms = strtok(NULL, ":");
-    long secs = atol(hms);
+    int secs = atol(hms);
 
-    long ms_hours = (hours * 3600000);
-    long ms_mins = (mins * 60000);
-    long ms_secs = (secs * 1000);
+    int ms_hours = (hours * 3600000);
+    int ms_mins = (mins * 60000);
+    int ms_secs = (secs * 1000);
 
-    long total_ms = (ms + ms_hours + ms_mins + ms_secs);
+    int total_ms = (ms + ms_hours + ms_mins + ms_secs);
+
     return total_ms;
 }
 
-void parse_ms_timestamp(char *timestamp, long total_ms) {
-    long hours = (total_ms / (1000 * 60 * 60));
-    long ms = (total_ms - (hours * 1000 * 60 * 60));
-    long mins = (ms / (1000 * 60));
+void parse_ms_timestamp(char *timestamp, int total_ms) {
+    int hours = (total_ms / (1000 * 60 * 60));
+    int ms = (total_ms - (hours * 1000 * 60 * 60));
+    int mins = (ms / (1000 * 60));
     ms = (ms - (mins * 1000 * 60));
-    long secs = (ms / 1000);
+    int secs = (ms / 1000);
     ms = (ms - (secs * 1000));
-    sprintf(timestamp, "%2ld:%2ld:%ld2,%3ld", hours, mins, secs, ms);
+    sprintf(timestamp, "%02d:%02d:%02d,%03d", hours, mins, secs, ms);
 }
 
-int parse_timestamps(Subtitle *subtitle, long offset_ms) {
-    char start[16], end[16];
-    char sts[12], ets[12];
-    if (sscanf(subtitle->timestamps, "%15s --> %15s", start, end) == 2)
+int parse_timestamps(Subtitle *subtitle, int offset_ms) {
+    char start[13], end[13];
+    char sts[13], ets[13];
+    if (sscanf(subtitle->timestamps, "%12s --> %12s", start, end) == 2)
     {
         subtitle->start_ms = parse_timestamp_ms(start);
         subtitle->end_ms = parse_timestamp_ms(end);
@@ -46,13 +47,15 @@ int parse_timestamps(Subtitle *subtitle, long offset_ms) {
         if (offset_ms != 0) {
             subtitle->start_ms += offset_ms;
             subtitle->end_ms += offset_ms;
+
             parse_ms_timestamp(sts, subtitle->start_ms);
             parse_ms_timestamp(ets, subtitle->end_ms);
-            memset(subtitle->timestamps, 0, sizeof(subtitle->timestamps));
+
             sprintf(subtitle->timestamps, "%s --> %s", sts, ets);
-            return 1; // Return 1 success and offset modified.
         }
-        return 0; // Return 0 success and no offset applied.
+
+        return 0; // Return 0 on success.
     }
+
     return -1; // Return -1 on parse error.
 }
