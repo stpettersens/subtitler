@@ -20,10 +20,10 @@ void cls() {
 #ifdef _WIN32
 // The function below is unsed on Windows.
 #else
-void add_ms_to_timespec(struct timespec *ts, long ms) {
-    ts->tv_nsec += ms * 1000000L;
-    if (ts->tv_nsec >= 1000000000L) {
-        ts->tv_nsec -= 1000000000L;
+void add_ms_to_timespec(struct timespec *ts, int ms) {
+    ts->tv_nsec += ms * 1000000;
+    if (ts->tv_nsec >= 1000000000) {
+        ts->tv_nsec -= 1000000000;
         ts->tv_sec += 1;
     }
 }
