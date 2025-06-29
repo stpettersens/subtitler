@@ -235,7 +235,7 @@ int process_subtitles
 
     if (offset_ms != 0)
     {
-        // Write out time changes to out file.
+        // Write the time changes to output file.
         f = fopen(out_srt_file, "w");
         if (!f) {
             perror("Failed to open subtitles (SRT) file for writing.\n");
@@ -251,7 +251,7 @@ int process_subtitles
         fclose(f);
     }
 
-    // Any addtional option to run after timeshift, such as playback.
+    // Any additional option to run after timeshift, such as playback.
     switch (op) {
         case NO_EXTRA_OP:
             break;
