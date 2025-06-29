@@ -78,10 +78,29 @@ void playback_subtitles(char *in_srt_file, int count, int offset_ms, Subtitle *s
     }
 }
 
+bool has_unix_line_endings(char *in_srt_file) {
+    FILE *f = fopen(in_srt_file, "r");
+    if (!f) {
+        perror("Failed to open subtitles (SRT) file to check line endings.\n");
+        return false;
+    }
+
+    bool lf = true;
+    char line[MAX_LINE_LENGTH];
+    while (fgets(line, sizeof(line), f)) {
+        if (strstr(line, "\r") != NULL) {
+            lf = false; // Either Windows or Mac OS line ending detected.
+            break;
+        }
+    }
+    fclose(f);
+    return lf;
+}
+
 int get_subtitles_count(char *in_srt_file) {
     FILE *f = fopen(in_srt_file, "r");
     if (!f) {
-        perror("Failed to open subtitles (SRT) file for counting.\n");
+        perror("Failed to open subtitles (SRT) file for counting number of.\n");
         return -1;
     }
     int count, last = 0;
@@ -100,10 +119,19 @@ int get_subtitles_count(char *in_srt_file) {
 
 int process_subtitles
 (char *in_srt_file, char *out_srt_file, int frame_count, int *frames, int offset_ms, Op op) {
+    // Check that file has unix line endings, as it should.
+    if (!has_unix_line_endings(in_srt_file))
+    {
+        printf("Error: Input file does not have Unix line endings, aborting...\n");
+        return -1;
+    }
+
     // Determine number of subtitles (count).
     int count = get_subtitles_count(in_srt_file);
-    if (count == -1)
+    if (count == -1) {
+        printf("Error: Cannot determine number of subtitles, aborting...\n");
         return -1;
+    }
 
     // Allocate memory on heap for all subtitles.
     Subtitle *subtitles = malloc((sizeof(Subtitle) * count));
