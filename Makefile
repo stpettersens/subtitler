@@ -26,7 +26,7 @@ clean:
 	$(RM)
 
 $(TARGET): $(OBJ)
-	$(CC) -o $@ $?
+	$(CC)-o $@ $?
 
 obj/%.o: src/%.c
 	$(CC)$(FLAGS) -c $< -o $@ -I$(INCLUDE)
