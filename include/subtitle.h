@@ -7,8 +7,10 @@
 #define CLEAR_SCREEN "clear"
 #endif
 
+#define MAX_UNIT 100
+#define MAX_FRAMES 500
 #define MAX_LINE_LENGTH 501
-#define INTERVAL_MS 1           // 1 millisecond = 1000000 nanoseconds.
+#define INTERVAL_MS 1           // 1 millisecond = 1,000,000 nanoseconds.
 
 typedef struct {
     int sequence;
@@ -27,11 +29,11 @@ typedef enum {
 
 typedef enum {
     NO_EXTRA_OP = 0,
-    PLAYBACK = 1,
+    PLAYBACK = 1
 } Op;
 
 void cls();
-void playback_subtitles(char *in_srt_file, int count, Subtitle *subtitles);
+void playback_subtitles(char *in_srt_file, int count, int offset_ms, Subtitle *subtitles);
 int get_subtitles_count(char *in_srt_file);
 
 int process_subtitles

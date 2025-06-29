@@ -1,4 +1,4 @@
-CC = gcc # clang also works.
+CC = gcc # clang also works (at least on Linux).
 TARGET = bin/subtitler
 INCLUDE = include
 FLAGS=-Wall -Wextra -std=c11
@@ -16,7 +16,7 @@ ifeq ($(uname),Windows)
 endif
 
 run: all
-	$(TARGET)
+	$(TARGET) -h
 
 all: clean default
 

@@ -29,14 +29,14 @@ void add_ms_to_timespec(struct timespec *ts, int ms) {
 }
 #endif
 
-void playback_subtitles(char *in_srt_file, int count, Subtitle *subtitles) {
+void playback_subtitles(char *in_srt_file, int count, int offset_ms, Subtitle *subtitles) {
     char start[16], end[16];
     sscanf(subtitles[(count - 1)].timestamps, "%15s --> %15s", start, end);
 
     cls();
 
-    printf("Playing back '%s' (Runtime: %s [%d ms]; Count = %d)\n",
-    in_srt_file, end, subtitles[(count - 1)].end_ms, count);
+    printf("Playing back '%s' (Runtime: %s [%d ms]; Count = %d; Offset ms = %d)\n",
+    in_srt_file, end, subtitles[(count - 1)].end_ms, count, offset_ms);
 
     sleep(3);
     cls();
@@ -138,7 +138,7 @@ int process_subtitles
             }
         }
 
-        if (strstr(line, ":") && strstr(line, "-->"))
+        if (strstr(line, ":") != NULL && strstr(line, "-->") != NULL)
             tag = TIMESTAMPS;
 
         // Add sequence number.
@@ -229,7 +229,7 @@ int process_subtitles
             break;
 
         case PLAYBACK:
-            playback_subtitles(in_srt_file, count, subtitles);
+            playback_subtitles(in_srt_file, count, offset_ms, subtitles);
             break;
     }
 
