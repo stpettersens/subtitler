@@ -1,7 +1,7 @@
 ### subtitler
 > CLI utility to timeshift subtitle (SRT) files.
 
-<pre>
+```
 Subtitler
 CLI subtitles (SRT) timeshift and playback utility.
 Copyright 2025 Sam Saint-Pettersen.
@@ -19,4 +19,4 @@ Usage: ./bin/subtitler [-h | -v | -f <input_srt_file> -o <output_srt_file>
         -p: Playback the subtitles in real time (optional).
         -h: Display this help information and exit.
         -v: Display program version and exit.
-</pre>
+```
