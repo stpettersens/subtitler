@@ -3,7 +3,7 @@
 
 <pre>
 Subtitler
-CLI timeshift and playback utility.
+CLI subtitles (SRT) timeshift and playback utility.
 Copyright 2025 Sam Saint-Pettersen.
 
 Released under the MIT License.

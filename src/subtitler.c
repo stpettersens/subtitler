@@ -10,7 +10,7 @@ void display_version() {
 
 void display_usage(char *program) {
     printf("Subtitler\n");
-    printf("CLI timeshift and playback utility.\n");
+    printf("CLI subtitles (SRT) timeshift and playback utility.\n");
     printf("Copyright 2025 Sam Saint-Pettersen.\n\n");
     printf("Released under the MIT License.\n\n");
     printf("Usage: %s [-h | -v | -f <input_srt_file> -o <output_srt_file>\n", program);
@@ -111,8 +111,6 @@ int main(int argc, char *argv[]) {
         printf("Warning: Unknown unit, defaulting to ms.\n");
         offset_ms = offset_unit;
     }
-
-    printf("offset_ms = %d\n", offset_ms);
 
     int status = process_subtitles
     (in_srt_file, out_srt_file, frame_count, iframes, offset_ms, op);
