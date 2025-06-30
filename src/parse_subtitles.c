@@ -13,10 +13,6 @@
 #include <string.h>
 #include "subtitle.h"
 
-void cls() {
-    system(CLEAR_SCREEN);
-}
-
 #ifdef _WIN32
 // The function below is unsed on Windows.
 #else

@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
+#include <unistd.h>
 #include <getopt.h>
 #include "subtitle.h"
 
@@ -13,15 +15,16 @@ void display_usage(char *program) {
     printf("CLI subtitles (SRT) timeshift and playback utility.\n");
     printf("Copyright 2025 Sam Saint-Pettersen.\n\n");
     printf("Released under the MIT License.\n\n");
-    printf("Usage: %s [-h | -v | -f <input_srt_file> -o <output_srt_file>\n", program);
-    printf("\t[-x <frame,frame...>] -t <time_offset> -u <time_unit> [-p]]\n\n");
+    printf("Usage: %s [-h | -v | [-q] -f <input_srt_file> [-o <output_srt_file>]\n", program);
+    printf("\t[-x <frame,frame...>] [-t <time_offset>] [-u <time_unit>] [-p]]\n\n");
+    printf("\t-q: Quiet mode; only print errors not warnings or most info (optional: has no effect on -p).\n");
     printf("\t-f: Path to input subtitles (SRT) file.\n");
-    printf("\t-o: Path to output subtitles (SRT) file.\n");
-    printf("\t-x: Frames (subtitles) to apply timeshift offset to (comma separated or range).\n");
-    printf("\t-t: Time offset number (integer which is positive or negative).\n");
-    printf("\t-u: Time unit (hrs, mins, secs or ms).\n");
+    printf("\t-o: Path to output subtitles (SRT) file (optional: if not specifed, uses input as output).\n");
+    printf("\t-x: Frames (subtitles) to apply timeshift offset to (optional: comma separated or range).\n");
+    printf("\t-t: Time offset number (optional: integer which is positive or negative).\n");
+    printf("\t-u: Time unit (optional: defaults to 'ms' if unspecifed; can be 'hrs', 'mins', 'secs' or 'ms').\n");
     printf("\t-p: Playback the subtitles in real time (optional).\n");
-    printf("\t-h: Display this help information and exit.\n");
+    printf("\n\t-h: Display this help information and exit.\n");
     printf("\t-v: Display program version and exit.\n");
 }
 
@@ -44,9 +47,15 @@ int main(int argc, char *argv[]) {
 
     Op op = NO_EXTRA_OP;
 
+    bool verbose = true;
+
     int c = -1;
-    while ((c = getopt(argc, argv, "f:o:x:t:u:phv")) != -1) {
+    while ((c = getopt(argc, argv, "qf:o:x:t:u:phv")) != -1) {
         switch (c) {
+            case 'q':
+                verbose = false;
+                break;
+
             case 'f':
                 in_srt_file = optarg;
                 break;
@@ -88,12 +97,19 @@ int main(int argc, char *argv[]) {
     }
 
     if (out_srt_file == NULL) {
-        printf("Error: -o requires a file path for output SRT file.\n\n");
-        display_usage(argv[0]);
-        return -1;
+        out_srt_file = in_srt_file;
+        if (verbose && offset_unit != 0) {
+            printf("Warning: Modifying input file in-place as a timeshift offset was set.\n");
+        }
+        if (offset_unit != 0) {
+            printf("Ctrl+C within 5 seconds to cancel.\n");
+            sleep(5);
+            cls();
+        }
     }
 
-    printf("frames = %s\n", frames);
+    // !TODO set frames as specified by command line.
+    // This will include frame_counter++ in the operation.
 
     if (strcmp(unit, "hrs") == 0)
         offset_ms = (offset_unit * 3600000);
@@ -107,9 +123,15 @@ int main(int argc, char *argv[]) {
     else if (strcmp(unit, "ms") == 0)
         offset_ms = offset_unit;
 
-    else {
-        printf("Warning: Unknown unit, defaulting to ms.\n");
+    else
         offset_ms = offset_unit;
+
+    // Print what the offset operation will do to the output when verbose.
+    if (verbose && offset_ms != 0) {
+        if (frame_count != 0)
+            printf("Timeshifting selected subtitles by %d ms.", offset_ms);
+        else
+            printf("Timeshifting all subtitles by %d ms.", offset_ms);
     }
 
     int status = process_subtitles
