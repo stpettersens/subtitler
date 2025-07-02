@@ -109,14 +109,16 @@ int main(int argc, char *argv[]) {
     }
 
     // Process a single frame.
-    if (strlen(frames) > 0 && strstr(frames, ",") == NULL && strstr(frames, "-") == NULL)
-        iframes[0] = atoi(frames);
+    if (strlen(frames) > 0 && strstr(frames, ",") == NULL && strstr(frames, "-") == NULL) {
+        iframes[0] = (atoi(frames) - 1); // Minus 1 because frames start at 0 internally.
+        frame_count = 1;
+    }
 
     // or process list of subtitle "frame"s.
-    if (strstr(frames, ",") != NULL) {
+    else if (strstr(frames, ",") != NULL) {
         char *frame = strtok(frames, ",");
         while (frame != NULL) {
-            iframes[frame_count] = (atoi(frame) - 1);// Minus 1 because frames start at 0 internally.
+            iframes[frame_count] = (atoi(frame) - 1);
             frame = strtok(NULL, ",");
             frame_count++;
         }
