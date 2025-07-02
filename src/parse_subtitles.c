@@ -47,10 +47,9 @@ void playback_subtitles(char *in_srt_file, int count, int offset_ms, Subtitle *s
     int i = 0;
     int timer = 0;
     while (i < count) {
-
 #ifdef _WIN32
-    // ...
-#endif
+        // ...
+#else
         if (timer == subtitles[i].start_ms) {
             printf("%s\n", subtitles[i].timestamps);
             printf("%s\n", subtitles[i].text);
@@ -59,9 +58,13 @@ void playback_subtitles(char *in_srt_file, int count, int offset_ms, Subtitle *s
             i++;
             cls();
         }
-
+#endif
 #ifdef _WIN32
-        Sleep(1); // Sleep 1 ms.
+        printf("%s\n", subtitles[i].timestamps);
+        printf("%s\n", subtitles[i].text);
+        Sleep(3000); // Sleep 3 seconds on Windows !!!.
+        i++;
+        cls();
 #else
         add_ms_to_timespec(&next, INTERVAL_MS);
         clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, &next, NULL);
