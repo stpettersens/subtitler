@@ -171,7 +171,7 @@ int main(int argc, char *argv[]) {
     int status = process_subtitles
     (in_srt_file, out_srt_file, frame_count, iframes, offset_ms, op);
 
-    // Print what the offset operation will do to the output when verbose.
+    // Print what the offset operation has done to the output when verbose.
     if (status == 0 && offset_ms != 0 && verbose) {
         if (frame_count != 0)
             printf("Timeshifted selected subtitles by %d ms.", offset_ms);
