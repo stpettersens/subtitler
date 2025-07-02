@@ -20,7 +20,7 @@ void display_usage(char *program) {
     printf("\t-q: Quiet mode; only print errors not warnings or most info (optional: has no effect on -p).\n");
     printf("\t-f: Path to input subtitles (SRT) file.\n");
     printf("\t-o: Path to output subtitles (SRT) file (optional: if not specifed, uses input as output).\n");
-    printf("\t-x: Frames (subtitles) to apply timeshift offset to (optional: comma separated or range).\n");
+    printf("\t-x: Frames (subtitles) to apply timeshift offset to (optional: comma separated or inclusive range (e.g. 1-5).\n");
     printf("\t-t: Time offset number (optional: integer which is positive or negative).\n");
     printf("\t-u: Time unit (optional: defaults to 'ms' if unspecifed; can be 'hrs', 'mins', 'secs' or 'ms').\n");
     printf("\t-p: Playback the subtitles in real time (optional).\n");
@@ -30,7 +30,7 @@ void display_usage(char *program) {
 
 int main(int argc, char *argv[]) {
     if (argc == 1) {
-        printf("Error: Please provide necessary options and arguments.\n\n");
+        fprintf(stderr, "Error: Please provide necessary options and arguments.\n\n");
         display_usage(argv[0]);
         return -1;
     }
@@ -108,8 +108,49 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    // !TODO set frames as specified by command line.
-    // This will include frame_counter++ in the operation.
+    // Process a single frame.
+    if (strlen(frames) > 0 && strstr(frames, ",") == NULL && strstr(frames, "-") == NULL)
+        iframes[0] = atoi(frames);
+
+    // or process list of subtitle "frame"s.
+    if (strstr(frames, ",") != NULL) {
+        char *frame = strtok(frames, ",");
+        while (frame != NULL) {
+            iframes[frame_count] = (atoi(frame) - 1);// Minus 1 because frames start at 0 internally.
+            frame = strtok(NULL, ",");
+            frame_count++;
+        }
+    }
+
+    // or process range of subtitle "frame"s.
+    else if (strstr(frames, "-") != NULL) {
+        char *frame = strtok(frames, "-");
+        int range[2];
+        int count = 0;
+        while (frame != NULL) {
+            range[count] = (atoi(frame) - 1);
+            frame = strtok(NULL, "-");
+            count++;
+        }
+        if (range[0] >= range[1]) {
+            fprintf(stderr, "Error: Provided range is invalid, aborting...\n");
+            return -1;
+        }
+        for (int fr = range[0]; fr <= range[1]; fr++) {
+            iframes[frame_count] = fr;
+            frame_count++;
+        }
+    }
+
+    // Check there is no repeating frames.
+    int last = -9999;
+    for (int fr = 0; fr < frame_count; fr++) {
+        if (iframes[fr] == last) {
+            fprintf(stderr, "Error: Duplicate subtitle frames given, aborting...\n");
+            return -1;
+        }
+        last = iframes[fr];
+    }
 
     if (strcmp(unit, "hrs") == 0)
         offset_ms = (offset_unit * 3600000);
@@ -122,20 +163,19 @@ int main(int argc, char *argv[]) {
 
     else if (strcmp(unit, "ms") == 0)
         offset_ms = offset_unit;
-
     else
         offset_ms = offset_unit;
 
-    // Print what the offset operation will do to the output when verbose.
-    if (verbose && offset_ms != 0) {
-        if (frame_count != 0)
-            printf("Timeshifting selected subtitles by %d ms.", offset_ms);
-        else
-            printf("Timeshifting all subtitles by %d ms.", offset_ms);
-    }
-
     int status = process_subtitles
     (in_srt_file, out_srt_file, frame_count, iframes, offset_ms, op);
+
+    // Print what the offset operation will do to the output when verbose.
+    if (status == 0 && offset_ms != 0 && verbose) {
+        if (frame_count != 0)
+            printf("Timeshifted selected subtitles by %d ms.", offset_ms);
+        else
+            printf("Timeshifted all subtitles by %d ms.", offset_ms);
+    }
 
     return status;
 }
