@@ -108,7 +108,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    // Process a single frame.
+    // Process a single subtitle "frame".
     if (strlen(frames) > 0 && strstr(frames, ",") == NULL && strstr(frames, "-") == NULL) {
         iframes[0] = (atoi(frames) - 1); // Minus 1 because frames start at 0 internally.
         frame_count = 1;
@@ -144,8 +144,8 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    // Check there is no repeating frames.
-    int last = -9999;
+    // Check there are no repeating frames.
+    int last = -1;
     for (int fr = 0; fr < frame_count; fr++) {
         if (iframes[fr] == last) {
             fprintf(stderr, "Error: Duplicate subtitle frames given, aborting...\n");
