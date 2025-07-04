@@ -1,12 +1,6 @@
 #ifndef SUBTITLE_H
 #define SUBTITLE_H
 
-#ifdef _WIN32
-#define CLEAR_SCREEN "cls"
-#else
-#define CLEAR_SCREEN "clear"
-#endif
-
 #define MAX_UNIT 100
 #define MAX_FRAMES 500
 #define MAX_LINE_LENGTH 501
