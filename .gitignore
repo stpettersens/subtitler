@@ -1,4 +1,4 @@
 bin/subtitler
 subtitler.exe
 *.o
-Parasite.srt
+Parasite*.srt
